@@ -9,12 +9,12 @@ $jawsdb_db = substr($jawsdb_url["path"], 1);
 // Connect to DB
 $conn = new mysqli($jawsdb_server, $jawsdb_username, $jawsdb_password, $jawsdb_db);
 
-if (!$conn) {
+if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+    $id = $conn->real_escape_string($_GET['id']);
 
     $sql = "DELETE FROM usser WHERE id='$id'";
 
@@ -25,5 +25,7 @@ if (isset($_GET['id'])) {
     }
 
     $conn->close();
+} else {
+    echo "No ID provided for deletion.";
 }
 ?>
