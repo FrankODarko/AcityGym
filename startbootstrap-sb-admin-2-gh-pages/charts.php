@@ -380,59 +380,55 @@
                 <!-- End of Topbar -->
 
                 <!-- Begin Page Content -->
-                <div class="container-fluid">
-                    <h1 class="h3 mb-2 text-gray-800">Membership Plans</h1>
-                    <p class="mb-4">Manage all the membership plans available at your gym.</p>
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Current Membership Plans</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="membershipTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Plan Name</th>
+                                        <th>Duration</th>
+                                        <th>Price</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Plan Name</th>
+                                        <th>Duration</th>
+                                        <th>Price</th>
+                                        <th>Description</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    <?php
+                                    // Get JAWSDB connection information
+                                    $jawsdb_url = parse_url(getenv("JAWSDB_URL"));
+                                    $jawsdb_server = $jawsdb_url["host"];
+                                    $jawsdb_username = $jawsdb_url["user"];
+                                    $jawsdb_password = $jawsdb_url["pass"];
+                                    $jawsdb_db = substr($jawsdb_url["path"], 1);
 
-                    <div class="card shadow mb-4">
-                        <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Current Membership Plans</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="membershipTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Plan Name</th>
-                                            <th>Duration</th>
-                                            <th>Price</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tfoot>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Plan Name</th>
-                                            <th>Duration</th>
-                                            <th>Price</th>
-                                            <th>Description</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </tfoot>
-                                    <tbody>
-                                        <?php
-                                        // Get JAWSDB connection information
-                                        $jawsdb_url = parse_url(getenv("JAWSDB_URL"));
-                                        $jawsdb_server = $jawsdb_url["host"];
-                                        $jawsdb_username = $jawsdb_url["user"];
-                                        $jawsdb_password = $jawsdb_url["pass"];
-                                        $jawsdb_db = substr($jawsdb_url["path"], 1);
+                                    // Connect to DB
+                                    $conn = new mysqli($jawsdb_server, $jawsdb_username, $jawsdb_password, $jawsdb_db);
 
-                                        // Connect to DB
-                                        $conn = new mysqli($jawsdb_server, $jawsdb_username, $jawsdb_password, $jawsdb_db);
+                                    if ($conn->connect_error) {
+                                        die("Connection failed: " . $conn->connect_error);
+                                    }
 
-                                        if (!$conn) {
-                                            die("Connection failed: " . $conn->connect_error);
-                                        }
+                                    $sql = "SELECT * FROM memberships";
+                                    $result = $conn->query($sql);
 
-                                        $sql = "SELECT * FROM memberships";
-                                        $result = $conn->query($sql);
-
-                                        if ($result->num_rows > 0) {
-                                            while ($row = $result->fetch_assoc()) {
-                                                echo "<tr>
+                                    if ($result->num_rows > 0) {
+                                        while ($row = $result->fetch_assoc()) {
+                                            echo "<tr>
                                 <td>" . $row['id'] . "</td>
                                 <td>" . $row['plan_name'] . "</td>
                                 <td>" . $row['duration'] . "</td>
@@ -443,196 +439,196 @@
                                     <button class='btn btn-danger btn-sm' onclick='confirmDelete(" . $row['id'] . ")'>Delete</button>
                                 </td>
                                 </tr>";
-                                            }
                                         }
+                                    }
 
-                                        $conn->close();
-                                        ?>
-                                    </tbody>
-                                </table>
+                                    $conn->close();
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Add Membership Modal -->
+                <div class="modal fade" id="addMembershipModal" tabindex="-1" role="dialog"
+                    aria-labelledby="addMembershipModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addMembershipModalLabel">Add New Membership Plan</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addMembershipForm">
+                                    <div class="form-group">
+                                        <label for="addPlanName">Plan Name</label>
+                                        <input type="text" class="form-control" id="addPlanName" name="plan_name"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addDuration">Duration</label>
+                                        <input type="text" class="form-control" id="addDuration" name="duration"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addPrice">Price</label>
+                                        <input type="text" class="form-control" id="addPrice" name="price" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addDescription">Description</label>
+                                        <textarea class="form-control" id="addDescription" name="description" rows="3"
+                                            required></textarea>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" onclick="saveAddMembership()">Add
+                                        Membership</button>
+                                </form>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Add Membership Modal -->
-                    <div class="modal fade" id="addMembershipModal" tabindex="-1" role="dialog"
-                        aria-labelledby="addMembershipModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="addMembershipModalLabel">Add New Membership Plan</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="addMembershipForm">
-                                        <div class="form-group">
-                                            <label for="addPlanName">Plan Name</label>
-                                            <input type="text" class="form-control" id="addPlanName" name="plan_name"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="addDuration">Duration</label>
-                                            <input type="text" class="form-control" id="addDuration" name="duration"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="addPrice">Price</label>
-                                            <input type="text" class="form-control" id="addPrice" name="price" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="addDescription">Description</label>
-                                            <textarea class="form-control" id="addDescription" name="description"
-                                                rows="3" required></textarea>
-                                        </div>
-                                        <button type="button" class="btn btn-primary" onclick="saveAddMembership()">Add
-                                            Membership</button>
-                                    </form>
-                                </div>
+                <!-- Edit Membership Modal -->
+                <div class="modal fade" id="editMembershipModal" tabindex="-1" role="dialog"
+                    aria-labelledby="editMembershipModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editMembershipModalLabel">Edit Membership Plan</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editMembershipForm">
+                                    <input type="hidden" id="editMembershipId" name="id">
+                                    <div class="form-group">
+                                        <label for="editPlanName">Plan Name</label>
+                                        <input type="text" class="form-control" id="editPlanName" name="plan_name"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editDuration">Duration</label>
+                                        <input type="text" class="form-control" id="editDuration" name="duration"
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editPrice">Price</label>
+                                        <input type="text" class="form-control" id="editPrice" name="price" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="editDescription">Description</label>
+                                        <textarea class="form-control" id="editDescription" name="description" rows="3"
+                                            required></textarea>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" onclick="saveEditMembership()">Save
+                                        changes</button>
+                                </form>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Edit Membership Modal -->
-                    <div class="modal fade" id="editMembershipModal" tabindex="-1" role="dialog"
-                        aria-labelledby="editMembershipModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="editMembershipModalLabel">Edit Membership Plan</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form id="editMembershipForm">
-                                        <input type="hidden" id="editMembershipId" name="id">
-                                        <div class="form-group">
-                                            <label for="editPlanName">Plan Name</label>
-                                            <input type="text" class="form-control" id="editPlanName" name="plan_name"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="editDuration">Duration</label>
-                                            <input type="text" class="form-control" id="editDuration" name="duration"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="editPrice">Price</label>
-                                            <input type="text" class="form-control" id="editPrice" name="price"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="editDescription">Description</label>
-                                            <textarea class="form-control" id="editDescription" name="description"
-                                                rows="3" required></textarea>
-                                        </div>
-                                        <button type="button" class="btn btn-primary"
-                                            onclick="saveEditMembership()">Save changes</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Button to Open Modal -->
+                <button class="btn btn-success btn-sm my-3" data-toggle="modal" data-target="#addMembershipModal">Add
+                    Membership</button>
 
-                    <!-- Button to Open Modal -->
-                    <button class="btn btn-success btn-sm my-3" data-toggle="modal"
-                        data-target="#addMembershipModal">Add Membership</button>
-
-                    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
-                    <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script>
-                    <script>
-                        $(document).ready(function () {
-                            $('#membershipTable').DataTable({
-                                "lengthMenu": [5, 10, 25, 50, 100],
-                                "language": {
-                                    "lengthMenu": "Display _MENU_ records per page",
-                                    "zeroRecords": "No records found",
-                                    "info": "Showing page _PAGE_ of _PAGES_",
-                                    "infoEmpty": "No records available",
-                                    "infoFiltered": "(filtered from _MAX_ total records)"
-                                }
-                            });
-                        });
-
-
-                        function saveAddMembership() {
-                            var form = document.getElementById('addMembershipForm');
-                            var formData = new FormData(form);
-
-                            fetch('php/btn/AddMembership.php', {
-                                method: 'POST',
-                                body: formData
-                            })
-                                .then(response => response.text())
-                                .then(data => {
-                                    alert(data);
-                                    location.reload();
-                                });
-                        }
-
-                        function openEditModal(id) {
-                            fetch('php/btn/GetMembership.php?id=' + id)
-                                .then(response => response.json())
-                                .then(data => {
-                                    document.getElementById('editMembershipId').value = data.id;
-                                    document.getElementById('editPlanName').value = data.plan_name;
-                                    document.getElementById('editDuration').value = data.duration;
-                                    document.getElementById('editPrice').value = data.price;
-                                    document.getElementById('editDescription').value = data.description;
-                                    $('#editMembershipModal').modal('show');
-                                });
-                        }
-
-
-                        function saveEditMembership() {
-                            var form = document.getElementById('editMembershipForm');
-                            var formData = new FormData(form);
-
-                            fetch('php/btn/EditMembership.php', {
-                                method: 'POST',
-                                body: formData
-                            })
-                                .then(response => response.text())
-                                .then(data => {
-                                    alert(data);
-                                    location.reload();
-                                });
-                        }
-
-
-                        function confirmDelete(id) {
-                            if (confirm('Are you sure you want to delete this membership plan? This action cannot be undone.')) {
-                                fetch('php/btn/DeleteMembership.php?id=' + id)
-                                    .then(response => response.text())
-                                    .then(data => {
-                                        alert(data);
-                                        location.reload();
-                                    });
+                <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap4.min.js"></script>
+                <script>
+                    $(document).ready(function () {
+                        $('#membershipTable').DataTable({
+                            "lengthMenu": [5, 10, 25, 50, 100],
+                            "language": {
+                                "lengthMenu": "Display _MENU_ records per page",
+                                "zeroRecords": "No records found",
+                                "info": "Showing page _PAGE_ of _PAGES_",
+                                "infoEmpty": "No records available",
+                                "infoFiltered": "(filtered from _MAX_ total records)"
                             }
+                        });
+                    });
+
+
+                    function saveAddMembership() {
+                        var form = document.getElementById('addMembershipForm');
+                        var formData = new FormData(form);
+
+                        fetch('php/btn/AddMembership.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.text())
+                            .then(data => {
+                                alert(data);
+                                location.reload();
+                            });
+                    }
+
+                    function openEditModal(id) {
+                        fetch('php/btn/GetMembership.php?id=' + id)
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('editMembershipId').value = data.id;
+                                document.getElementById('editPlanName').value = data.plan_name;
+                                document.getElementById('editDuration').value = data.duration;
+                                document.getElementById('editPrice').value = data.price;
+                                document.getElementById('editDescription').value = data.description;
+                                $('#editMembershipModal').modal('show');
+                            });
+                    }
+
+
+                    function saveEditMembership() {
+                        var form = document.getElementById('editMembershipForm');
+                        var formData = new FormData(form);
+
+                        fetch('php/btn/EditMembership.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.text())
+                            .then(data => {
+                                alert(data);
+                                location.reload();
+                            });
+                    }
+
+
+                    function confirmDelete(id) {
+                        if (confirm('Are you sure you want to delete this membership plan? This action cannot be undone.')) {
+                            fetch('php/btn/DeleteMembership.php?id=' + id)
+                                .then(response => response.text())
+                                .then(data => {
+                                    alert(data);
+                                    location.reload();
+                                });
                         }
+                    }
 
-                    </script>
-                </div>
-
-                <!-- /.container-fluid -->
-
+                </script>
             </div>
-            <!-- End of Main Content -->
 
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Your Website 2020</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
+            <!-- /.container-fluid -->
 
         </div>
-        <!-- End of Content Wrapper -->
+        <!-- End of Main Content -->
+
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Your Website 2020</span>
+                </div>
+            </div>
+        </footer>
+        <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
 
     </div>
     <!-- End of Page Wrapper -->
